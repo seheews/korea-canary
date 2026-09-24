@@ -1,0 +1,38 @@
+name: hourly-check
+
+on:
+  schedule:
+    - cron: '5 * * * *'   # 매시 5분 (GitHub 사정으로 몇 분~수십 분 늦어질 수 있음)
+  workflow_dispatch:       # 수동 실행 버튼
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hourly-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install anthropic
+
+      - name: 점검 실행
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/update.py
+
+      - name: 결과 저장
+        run: |
+          git config user.name  "korea-canary-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/reports.json
+          git diff --cached --quiet || (git commit -m "점검 $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M')" && git push)
