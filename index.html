@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Korea Canary — 한국 전쟁 위험 신호 점검</title>
+<meta name="description" content="공개정보(OSINT)로 한국의 전쟁·군사위기 선행 신호를 약 1시간마다 점검하는 비공식 조기경보 페이지">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@600;700&display=swap">
+<style>
+/* ============ tokens ============ */
+:root{
+  --bg:#F6F7F9; --surface:#FFFFFF; --ink:#0E1319; --ink2:#38414E; --muted:#667180;
+  --line:#E1E4E9; --line2:#C9CFD8; --wash:#EEF0F3;
+  --s1:#8592A3; --s1i:#0E1319;
+  --s2:#E4B93A; --s2i:#1A1400;
+  --s3:#E5872B; --s3i:#1D0E00;
+  --s4:#BE473C; --s4i:#FFFFFF;
+  --s5:#C62828; --s5i:#FFFFFF;
+  --f:'Schibsted Grotesk','IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --serif:'Noto Serif KR','Nanum Myeongjo',Batang,serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1017; --surface:#121922; --ink:#EDF0F4; --ink2:#C2CAD5; --muted:#8B96A6;
+    --line:#222D3B; --line2:#33425A; --wash:#17202B; --s1:#7C8798;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1017; --surface:#121922; --ink:#EDF0F4; --ink2:#C2CAD5; --muted:#8B96A6;
+  --line:#222D3B; --line2:#33425A; --wash:#17202B; --s1:#7C8798;
+}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+html{scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:400 16px/1.65 var(--f); word-break:keep-all; overflow-wrap:break-word;
+  --stage:var(--s1); --stage-ink:var(--s1i); --wt:2px;
+}
+body[data-stage="2"]{--stage:var(--s2); --stage-ink:var(--s2i); --wt:4px}
+body[data-stage="3"]{--stage:var(--s3); --stage-ink:var(--s3i); --wt:6px}
+body[data-stage="4"]{--stage:var(--s4); --stage-ink:var(--s4i); --wt:8px}
+body[data-stage="5"]{--stage:var(--s5); --stage-ink:var(--s5i); --wt:10px}
+.c1{--c:var(--s1); --ci:var(--s1i)} .c2{--c:var(--s2); --ci:var(--s2i)} .c3{--c:var(--s3); --ci:var(--s3i)}
+.c4{--c:var(--s4); --ci:var(--s4i)} .c5{--c:var(--s5); --ci:var(--s5i)}
+:focus-visible{outline:3px solid var(--ink); outline-offset:2px; border-radius:3px}
+button{font:inherit; color:inherit; cursor:pointer}
+p{margin:0 0 10px}
+a{color:inherit; text-underline-offset:3px}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+.skip{position:absolute; left:-999px; top:8px; background:var(--ink); color:var(--bg); padding:8px 14px; z-index:100}
+.skip:focus{left:8px}
+.wrap{max-width:1120px; margin:0 auto; padding:0 16px}
+@media (min-width:700px){ .wrap{padding:0 28px} }
+
+/* type helpers */
+.lab{font-weight:600; font-size:11px; line-height:1.2; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.lab-kr{font-size:13px; color:var(--muted)}
+.no{font-weight:600; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ============ nav ============ */
+.nav{background:var(--bg); border-bottom:1px solid var(--line)}
+@media (min-width:900px){ .nav{position:sticky; top:0; z-index:30} }
+.nav-in{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0 16px; padding-top:10px; padding-bottom:0}
+.brand{display:inline-flex; align-items:center; gap:9px; font-weight:700; font-size:13px; letter-spacing:.14em; text-transform:uppercase; text-decoration:none}
+.brand i{width:10px; height:10px; background:var(--ink); transform:rotate(45deg); display:inline-block}
+.links{display:flex; gap:2px; order:3; width:100%; margin:4px -8px 0; overflow-x:auto}
+.links a{font-weight:600; font-size:12px; letter-spacing:.09em; text-transform:uppercase; text-decoration:none; color:var(--muted); padding:10px 8px}
+.links a:hover{color:var(--ink)}
+.live{display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--ink2); font-variant-numeric:tabular-nums}
+.live b{font-weight:700; letter-spacing:.08em; color:var(--ink)}
+.live .pip{width:9px; height:9px; border-radius:50%; background:var(--ink); display:inline-block}
+.live.stale .pip{background:transparent; border:2px dashed var(--ink)}
+@media (min-width:700px){
+  .nav-in{flex-wrap:nowrap; padding-top:0}
+  .nav-in{height:56px}
+  .links{order:1; width:auto; margin:0 0 0 28px; overflow:visible}
+  .links a{padding:18px 12px}
+  .live{order:2; margin-left:auto}
+}
+@media (max-width:699px){ .lastl{display:none} }
+
+/* stale bar: 위험 상승이 아니라 '데이터가 오래됨'을 뜻한다 (빗금 + 점선, 위험 색 미사용) */
+.stalebar{border-bottom:1px dashed var(--line2); background:repeating-linear-gradient(135deg,var(--wash) 0 7px,transparent 7px 14px)}
+.stalebar .wrap{display:flex; flex-wrap:wrap; gap:4px 14px; align-items:center; padding-top:10px; padding-bottom:10px}
+.stalebar .tag{font-weight:700; font-size:11px; letter-spacing:.12em; background:var(--ink); color:var(--bg); padding:3px 9px; border-radius:3px}
+.stalebar .msg{font-weight:600; font-size:14px}
+.stalebar .sub{font-size:12.5px; color:var(--ink2); flex-basis:100%}
+
+/* ============ sections ============ */
+main{padding-bottom:24px}
+section{padding-top:56px; scroll-margin-top:60px}
+#status{padding-top:24px}
+@media (max-width:699px){ section{padding-top:40px} #status{padding-top:16px} }
+.sh{display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 12px; border-top:1px solid var(--ink); padding-top:12px; margin:0 0 18px}
+.sh h2{font-size:13px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; margin:0}
+.sh .kr{font-size:14px; color:var(--muted)}
+.sh .right{margin-left:auto}
+.sub-h{font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin:32px 0 10px; color:var(--ink2)}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:6px}
+
+/* ============ hero ============ */
+.hero{border-top:var(--wt) solid var(--stage); padding-top:14px; display:grid; gap:14px 56px}
+.hero.hi{background:color-mix(in srgb,var(--stage) 9%,var(--surface)); padding:16px 18px 18px; border-radius:0 0 6px 6px}
+@media (min-width:860px){ .hero{grid-template-columns:minmax(0,5fr) minmax(0,7fr); padding-top:20px; align-items:end} }
+.lab-row{display:flex; align-items:baseline; gap:10px}
+.bigrow{display:flex; align-items:flex-end; gap:14px; margin-top:10px}
+.bignum{font-weight:700; font-size:clamp(68px,19vw,132px); line-height:.78; letter-spacing:-.055em; font-variant-numeric:tabular-nums}
+.bignum .of{font-size:.36em; font-weight:500; color:var(--muted); letter-spacing:-.02em; margin-left:.06em}
+.sname{font-weight:700; font-size:clamp(26px,6.4vw,40px); line-height:1.1; letter-spacing:-.025em; padding-bottom:2px}
+.state-tag{display:inline-flex; align-items:center; gap:8px; margin-top:12px; font-size:13px; font-weight:600}
+.state-tag i{width:10px; height:10px; background:var(--stage); border:2px solid var(--ink); border-radius:50%; display:inline-block}
+.quote{font-family:var(--serif); font-weight:600; font-size:clamp(17px,2.4vw,25px); line-height:1.6; letter-spacing:-.015em; max-width:27em; margin:0}
+.meta{display:flex; flex-wrap:wrap; gap:4px 26px; margin-top:12px; font-size:13.5px; color:var(--ink2); font-variant-numeric:tabular-nums}
+.meta b{color:var(--ink); font-weight:600}
+.meta .late{font-weight:700; color:var(--ink); text-decoration:underline dashed; text-underline-offset:3px}
+
+/* ladder */
+.ladder-wrap{margin-top:22px}
+.ladder{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(5,1fr)}
+.ladder li{position:relative}
+.ladder li::before{content:''; position:absolute; top:34px; right:50%; width:100%; height:2px; background:var(--line2)}
+.ladder li:first-child::before{display:none}
+.ladder li.past::before,.ladder li.now::before{background:var(--ink)}
+.node{width:100%; background:none; border:0; padding:6px 2px 8px; display:flex; flex-direction:column; align-items:center; gap:6px; position:relative; min-height:76px}
+.node .nn{font-size:11px; font-weight:600; color:var(--muted); font-variant-numeric:tabular-nums}
+.node .dot{width:14px; height:14px; border-radius:50%; border:2px solid var(--line2); background:var(--bg); position:relative; z-index:1; margin-top:2px}
+.past .node .dot{background:var(--ink); border-color:var(--ink); width:12px; height:12px; margin:3px 0}
+.now .node .dot{width:24px; height:24px; background:var(--stage); border:3px solid var(--ink); margin:-3px 0; box-shadow:0 0 0 4px var(--bg)}
+.node .nl{font-size:12px; line-height:1.3; color:var(--muted); text-align:center; font-weight:500}
+.now .node .nl{color:var(--ink); font-weight:700}
+.past .node .nl{color:var(--ink2)}
+.node .nowtag{font-size:10px; font-weight:700; letter-spacing:.1em; background:var(--stage); color:var(--stage-ink); padding:1px 7px; border-radius:3px; margin-top:-2px}
+.node[aria-expanded="true"] .nl{text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:2px}
+.node:hover .nl{color:var(--ink)}
+@media (min-width:700px){ .node .nl{font-size:14px} .ladder li::before{top:36px} }
+.steppanel{margin-top:8px; padding:16px 18px 6px}
+.steppanel .ph{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px}
+.steppanel .ph h3{margin:0; font-size:18px; letter-spacing:-.01em}
+.steppanel .badge{font-weight:700; font-size:12px; padding:2px 10px; border-radius:3px; background:var(--c); color:var(--ci)}
+.steppanel .x{margin-left:auto; background:none; border:1px solid var(--line2); border-radius:4px; padding:4px 12px; font-size:13px}
+.steppanel dl{display:grid; grid-template-columns:1fr; gap:0 32px; margin:0}
+@media (min-width:700px){ .steppanel dl{grid-template-columns:1fr 1fr} }
+.steppanel dt{font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-top:6px}
+.steppanel dd{margin:2px 0 12px; font-size:14.5px}
+.steppanel .live-line{grid-column:1/-1; border-top:1px dashed var(--line2); padding:10px 0 10px; font-size:13.5px; color:var(--ink2)}
+
+/* ============ what changed / what to do ============ */
+.pair{display:grid; gap:14px; margin-top:28px}
+@media (min-width:860px){ .pair{grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:20px; align-items:stretch} }
+@media (max-width:699px){ .pair{margin-top:22px} }
+.panelcard{padding:16px 18px 14px}
+.pc-head{display:flex; align-items:baseline; flex-wrap:wrap; gap:2px 10px; margin-bottom:12px}
+.pc-head .since{margin-left:auto; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.counts{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.cnt{border:1px solid var(--line); border-radius:5px; padding:8px 10px 7px; display:flex; align-items:baseline; justify-content:space-between; gap:6px}
+.cnt .k{font-size:12px; font-weight:600; color:var(--ink2); line-height:1.3}
+.cnt .n{font-size:28px; font-weight:700; line-height:1; letter-spacing:-.03em; font-variant-numeric:tabular-nums; color:var(--muted)}
+.cnt.on{border:2px solid var(--ink); padding:7px 9px 6px}
+.cnt.on .n{color:var(--ink)}
+.cnt.tA.on{background:var(--stage); color:var(--stage-ink); border-color:var(--ink)}
+.cnt.tA.on .n,.cnt.tA.on .k{color:var(--stage-ink)}
+.verdict{margin:14px 0 4px; font-size:clamp(22px,3.4vw,30px); font-weight:700; letter-spacing:-.025em; line-height:1.2}
+.verdict.calm{color:var(--ink)}
+.newlist,.unch{list-style:none; margin:10px 0 0; padding:0; display:grid; gap:8px}
+.newlist li,.unch li{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:baseline; font-size:14.5px}
+.pill{font-size:10px; font-weight:700; letter-spacing:.1em; padding:2px 7px; border-radius:3px; white-space:nowrap}
+.pill.new{background:var(--ink); color:var(--bg)}
+.pill.same{border:1px solid var(--line2); color:var(--muted)}
+.tier{display:inline-grid; place-items:center; width:20px; height:20px; border-radius:3px; font-size:12px; font-weight:700; margin-right:6px; vertical-align:1px}
+.tier.A{background:var(--ink); color:var(--bg)} .tier.B{border:2px solid var(--ink)} .tier.C{border:1px solid var(--muted); color:var(--muted)}
+details.more{margin-top:12px; border-top:1px solid var(--line)}
+details.more > summary{list-style:none; cursor:pointer; padding:10px 0; font-size:13.5px; font-weight:600; display:flex; justify-content:space-between; align-items:center; gap:12px}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::after{content:''; width:8px; height:8px; border-right:2px solid var(--ink); border-bottom:2px solid var(--ink); transform:rotate(45deg) translateY(-2px); flex:none}
+details.more[open] > summary::after{transform:rotate(-135deg) translateY(-2px)}
+details.more .in{padding:0 0 8px; font-size:14.5px}
+details.more .in ul{margin:0; padding-left:1.15em; display:grid; gap:8px}
+
+.todo{border-left:6px solid var(--stage); padding:16px 18px 12px}
+.todo .sum{font-size:clamp(17px,2.3vw,20px); font-weight:700; line-height:1.4; letter-spacing:-.015em; margin:0 0 12px}
+.acts{display:grid; gap:14px}
+.acts ul{list-style:none; margin:6px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 16px}
+.acts li{display:inline-flex; align-items:center; gap:8px; font-size:15px}
+.acts .yes li::before{content:''; width:14px; height:14px; border:2px solid var(--ink); border-radius:50%; background:radial-gradient(circle,var(--ink) 0 34%,transparent 38%); flex:none}
+.acts .no li{color:var(--muted); font-size:14px}
+.acts .no li::before{content:''; width:14px; height:2px; background:var(--muted); flex:none}
+@media (min-width:860px){ .acts ul{flex-direction:column; gap:8px} }
+
+/* ============ signal board ============ */
+.legend{display:flex; flex-wrap:wrap; gap:6px 18px; margin:0 0 16px; padding:0; list-style:none; font-size:12px; color:var(--ink2)}
+.legend li{display:inline-flex; align-items:center; gap:7px}
+.legend b{font-weight:700; letter-spacing:.06em; font-size:11px}
+.st{display:inline-block; width:14px; height:14px; flex:none; position:relative; vertical-align:-2px}
+.st.active{background:var(--stage); border:2px solid var(--ink); transform:rotate(45deg) scale(.78)}
+.st.unchanged{border:2px solid var(--ink); border-radius:50%}
+.st.notobs{border:2px dashed var(--muted); border-radius:50%}
+.st.watching{border:2px solid var(--ink); border-radius:50%; background:conic-gradient(var(--ink) 0 50%,transparent 0)}
+.st.unknown{border:2px solid var(--muted); border-radius:50%}
+.st.unknown::after{content:'?'; position:absolute; inset:0; font:700 9px/10px var(--f); text-align:center; color:var(--muted)}
+.grid{display:grid; gap:12px; grid-template-columns:minmax(0,1fr)}
+.grid > *{min-width:0}
+@media (min-width:860px){ .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .sg-A{grid-column:1/-1} }
+.sg{background:var(--surface); border:1px solid var(--line); border-radius:6px}
+.sg-A{border:2px solid var(--ink)}
+.sg-B{border:1px solid var(--ink2)}
+.sg > .hd{width:100%; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:0 14px; align-items:center; text-align:left; background:none; border:0; padding:14px 16px; border-radius:6px}
+.letter{display:grid; place-items:center; font-weight:700; border-radius:4px; width:44px; height:44px; font-size:24px}
+.sg-A .letter{background:var(--ink); color:var(--bg); width:56px; height:56px; font-size:32px}
+.sg-B .letter{border:3px solid var(--ink)}
+.sg-C .letter{border:1px solid var(--muted); color:var(--muted); font-weight:600}
+.hd > span{min-width:0}
+.hd .t1{display:block; font-size:11px; font-weight:700; letter-spacing:.11em; color:var(--muted)}
+.hd .t2{display:block; font-size:17px; font-weight:700; letter-spacing:-.01em; line-height:1.3}
+.sg-A .hd .t2{font-size:19px}
+.hd .t3{display:flex; flex-wrap:wrap; align-items:center; gap:2px 10px; margin-top:6px; font-size:12.5px; color:var(--ink2)}
+.tag{font-size:10px; font-weight:700; letter-spacing:.1em; padding:2px 7px; border-radius:3px; border:1px solid var(--line2); color:var(--ink2)}
+.sg-A .tag{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.bigcount{text-align:right; line-height:1}
+.bigcount b{display:block; font-size:38px; font-weight:700; letter-spacing:-.04em; font-variant-numeric:tabular-nums}
+.sg-A .bigcount b{font-size:48px}
+.bigcount span{font-size:10px; font-weight:700; letter-spacing:.1em; color:var(--muted)}
+.sg-C .bigcount b,.sg-B .bigcount b{color:var(--ink2)}
+.pips{display:flex; gap:6px; align-items:center}
+.chev{width:9px; height:9px; border-right:2px solid var(--ink); border-bottom:2px solid var(--ink); transform:rotate(45deg); margin-left:4px; display:inline-block}
+.hd[aria-expanded="true"] .chev{transform:rotate(-135deg)}
+.activelist{margin:0; padding:0 16px 12px 16px; min-width:0; list-style:none; display:grid; gap:6px}
+.activelist li{display:flex; gap:10px; align-items:baseline; font-size:14.5px; font-weight:600}
+.sg .bd{border-top:1px solid var(--line); padding:6px 16px 12px}
+.sg .grp{font-size:12.5px; color:var(--muted); margin:8px 0 2px}
+.sg .note{font-size:13px; color:var(--ink2); margin:0 0 8px; line-height:1.55}
+.rows{list-style:none; margin:0; padding:0}
+.row{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 14px; padding:11px 0; border-top:1px solid var(--line); align-items:start}
+.row:first-child{border-top:0}
+.row .nm{font-size:15px; font-weight:600; line-height:1.4}
+.row .stt{grid-column:1; display:inline-flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink2)}
+.row .stt b{font-weight:700; letter-spacing:.06em; font-size:11px; color:var(--ink)}
+.row .memo{grid-column:1/-1; font-size:13px; color:var(--muted); line-height:1.55}
+.row .dates{grid-column:1/-1; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.row .conf{grid-column:2; grid-row:1}
+.conf{display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700; letter-spacing:.08em; color:var(--ink2); white-space:nowrap}
+.bars{display:inline-flex; align-items:flex-end; gap:2px; height:11px}
+.bars i{width:3px; background:var(--line2); display:block}
+.bars i:nth-child(1){height:5px} .bars i:nth-child(2){height:8px} .bars i:nth-child(3){height:11px}
+.bars i.f{background:var(--ink)}
+
+.notobs{margin-top:28px; padding:16px 18px 14px}
+.notobs .why{display:flex; gap:10px; align-items:flex-start; font-size:13px; color:var(--ink2); background:var(--wash); border-radius:5px; padding:9px 12px; margin:0 0 14px}
+.notobs .why .i{flex:none; width:16px; height:16px; border:2px solid var(--ink2); border-radius:50%; font:700 10px/12px var(--f); text-align:center; margin-top:2px}
+.notlist{list-style:none; margin:0; padding:0; display:grid; gap:8px 24px}
+@media (min-width:700px){ .notlist{grid-template-columns:1fr 1fr} }
+.notlist li{display:flex; gap:10px; align-items:baseline; font-size:14.5px}
+.notlist li::before{content:''; width:12px; height:12px; border:2px dashed var(--muted); border-radius:50%; flex:none; transform:translateY(1px)}
+
+/* ============ trend ============ */
+.seg{display:inline-flex; border:1px solid var(--ink); border-radius:5px; overflow:hidden}
+.seg button{background:none; border:0; padding:5px 14px; font-size:12px; font-weight:700; letter-spacing:.08em}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--bg)}
+.trend{padding:14px 14px 10px}
+.trend svg{width:100%; height:auto; display:block; overflow:visible}
+.trend .ax{fill:var(--muted); font:500 11px var(--f)}
+.trend .axn{fill:var(--ink); font:700 11px var(--f)}
+.trend .gl{stroke:var(--line); stroke-width:1}
+.trend .band{fill:color-mix(in srgb,var(--stage) 16%,transparent)}
+.trend .ln{fill:none; stroke:var(--ink); stroke-width:2.5; stroke-linejoin:round}
+.trend .ext{stroke:var(--ink); stroke-width:2.5; fill:none}
+.trend .ext.gap{stroke:var(--muted); stroke-dasharray:4 5}
+.trend .pt{fill:var(--bg); stroke:var(--ink); stroke-width:2}
+.trend .pt.ch{fill:var(--stage); stroke-width:2.5}
+.cap{font-size:12.5px; color:var(--ink2); margin:8px 4px 2px}
+.cap small{display:block; color:var(--muted); margin-top:2px}
+
+/* ============ timeline ============ */
+.tl-day{margin-top:26px}
+.tl-day:first-child{margin-top:0}
+.tl{list-style:none; margin:10px 0 0; padding:0 0 0 24px; border-left:2px solid var(--line2)}
+.tl li{position:relative}
+.tl .dot{position:absolute; left:-31px; top:15px; width:10px; height:10px; border-radius:50%; background:var(--bg); border:2px solid var(--line2)}
+.tl .k-new .dot{background:var(--ink); border-color:var(--ink)}
+.tl .k-stage .dot{width:18px; height:18px; left:-35px; top:11px; background:var(--c); border:3px solid var(--ink)}
+.tl details > summary{list-style:none; cursor:pointer; display:grid; grid-template-columns:3.4em minmax(0,1fr) auto; gap:2px 12px; align-items:baseline; padding:11px 0}
+.tl details > summary::-webkit-details-marker{display:none}
+.tl details > summary::after{content:''; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg) translateY(-2px); align-self:center}
+.tl details[open] > summary::after{transform:rotate(-135deg) translateY(-2px)}
+.tl time{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; font-weight:500}
+.tl .tt{font-size:15px; font-weight:600; line-height:1.45}
+.tl .k-none .tt{font-weight:400; color:var(--muted)}
+.tl .k-stage .tt{font-weight:700}
+.tl .sb{display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:.05em; background:var(--c); color:var(--ci); padding:2px 8px; border-radius:3px; margin-left:8px; vertical-align:2px; white-space:nowrap}
+.tl .body{padding:2px 0 16px 3.4em; display:grid; gap:12px; font-size:14.5px}
+.tl .body h4{margin:0 0 4px; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.tl .body ul{margin:0; padding-left:1.15em; display:grid; gap:6px}
+@media (max-width:560px){ .tl .body{padding-left:0} .tl details > summary{grid-template-columns:3.2em minmax(0,1fr) auto} }
+.morebtn{margin:18px 0 0; background:none; border:1px solid var(--ink); border-radius:5px; padding:9px 18px; font-size:13px; font-weight:600}
+
+/* ============ decision logic ============ */
+.dlogic{overflow:hidden}
+.dl-row{display:grid; grid-template-columns:minmax(0,1fr) 40px minmax(0,15em); gap:8px 6px; align-items:center; padding:14px 18px; border-top:1px solid var(--line)}
+.dl-row:first-child{border-top:0}
+.dl-row.here{outline:3px solid var(--ink); outline-offset:-3px; background:var(--wash)}
+.dl-row .cond{display:flex; flex-wrap:wrap; align-items:center; gap:6px}
+.dl-row .cond .txt{flex-basis:100%; font-size:13px; color:var(--ink2); margin-top:2px}
+.tok{display:inline-grid; place-items:center; min-width:26px; height:26px; padding:0 4px; border-radius:4px; font-size:13px; font-weight:700}
+.tok.A{background:var(--ink); color:var(--bg)}
+.tok.B{border:2px solid var(--ink)}
+.tok.P{border:2px dashed var(--ink2); font-size:11px; letter-spacing:.04em; padding:0 8px}
+.op{font-weight:600; color:var(--muted); font-size:13px}
+.arrow{display:grid; place-items:center; color:var(--muted)}
+.outc{display:flex; flex-wrap:wrap; align-items:center; gap:6px}
+.outc .badge{font-weight:700; font-size:12px; letter-spacing:.06em; background:var(--c); color:var(--ci); padding:4px 10px; border-radius:4px}
+.outc .kr{font-size:13px; color:var(--ink2)}
+.outc .here-tag{font-size:10px; font-weight:700; letter-spacing:.1em; border:1px solid var(--ink); padding:1px 6px; border-radius:3px}
+@media (max-width:640px){
+  .dl-row{grid-template-columns:1fr; gap:6px}
+  .arrow{justify-items:start; transform:rotate(90deg); width:20px; height:20px}
+}
+.livecheck{padding:12px 18px; border-top:1px solid var(--line2); background:var(--wash); font-size:13.5px}
+
+/* ============ sources ============ */
+.evid{display:grid; gap:10px}
+@media (min-width:860px){ .evid{grid-template-columns:1fr 1fr} }
+.ev{padding:14px 16px}
+.ev .nm{display:flex; gap:10px; align-items:baseline; font-weight:600; font-size:14.5px; line-height:1.4; margin-bottom:10px}
+.ev dl{display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; margin:0}
+.ev dt{font-size:10px; font-weight:700; letter-spacing:.1em; color:var(--muted)}
+.ev dd{margin:1px 0 0; font-size:13.5px; font-variant-numeric:tabular-nums}
+.links-list{list-style:none; margin:0; padding:0; display:grid; gap:8px}
+.links-list li{padding:12px 16px}
+.links-list a{font-weight:600; font-size:14.5px}
+.links-list .m{font-size:12px; color:var(--muted); margin-top:2px; font-variant-numeric:tabular-nums}
+.empty{font-size:14px; color:var(--muted); border:1px dashed var(--line2); border-radius:6px; padding:14px 16px}
+
+/* ============ methodology ============ */
+.acc{border-top:1px solid var(--line)}
+.acc:last-of-type{border-bottom:1px solid var(--line)}
+.acc > summary{list-style:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:16px 2px; font-size:16px; font-weight:700; letter-spacing:-.01em}
+.acc > summary::-webkit-details-marker{display:none}
+.acc > summary::after{content:'+'; font-size:22px; font-weight:400; line-height:1; color:var(--muted)}
+.acc[open] > summary::after{content:'\2212'}
+.acc .in{padding:0 2px 18px; max-width:46em; font-size:15px}
+.acc .in ul{margin:0 0 8px; padding-left:1.15em; display:grid; gap:8px}
+.lede{max-width:40em; font-size:16px; margin:0 0 22px}
+
+footer{padding:56px 0 48px; color:var(--muted); font-size:13px}
+footer p{margin:0 0 6px; max-width:52em}
+
+/* ============ glossary ============ */
+.term{white-space:normal}
+.q{display:inline-grid; place-items:center; width:16px; height:16px; margin-left:3px; padding:0; border:1.5px solid var(--muted); border-radius:50%; background:none; color:var(--muted); font:700 10px/1 var(--f); vertical-align:1px}
+.q:hover,.q[aria-expanded="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+#tip{position:fixed; z-index:90; max-width:min(300px,calc(100vw - 16px)); background:var(--ink); color:var(--bg); border-radius:6px; padding:10px 12px; font-size:13px; line-height:1.55; box-shadow:0 6px 24px rgba(0,0,0,.25)}
+#tip strong{display:block; font-size:12px; letter-spacing:.04em; margin-bottom:3px}
+
+.loaderr{padding:12px 16px; margin:16px 0; border:1px dashed var(--line2); border-radius:6px; font-size:14px}
+/* ---- mobile compaction: 첫 화면에 핵심 6가지가 들어오도록 (스타일 맨 끝에 둘 것) ---- */
+@media (max-width:699px){
+  .hero{gap:8px}
+  .bigrow{margin-top:6px}
+  .state-tag{margin-top:8px}
+  .quote{font-size:16.5px; line-height:1.55}
+  .meta{margin-top:8px; gap:2px 18px; font-size:13px}
+  .ladder-wrap{margin-top:12px}
+  .node{min-height:66px; padding-top:2px}
+  .ladder li::before{top:28px}
+  .pair{margin-top:12px; gap:10px}
+  .panelcard,.todo{padding:12px 14px 8px}
+  .pc-head{margin-bottom:8px}
+  .verdict{margin:10px 0 2px; font-size:22px}
+  details.more{margin-top:6px}
+  details.more > summary{padding:8px 0; font-size:13px}
+  .todo .sum{font-size:16.5px; margin-bottom:8px}
+}
+</style>
+</head>
+<body data-stage="2">
+<a class="skip" href="#status">본문으로 건너뛰기</a>
+
+<div class="stalebar" id="stalebar" role="status" hidden>
+  <div class="wrap">
+    <span class="tag">DATA STALE</span>
+    <span class="msg" id="stalemsg"></span>
+    <span class="sub">위험이 높아졌다는 뜻이 아니라 데이터가 오래됐다는 뜻입니다. 아래 위험 단계는 마지막 점검 시점의 판정입니다.</span>
+  </div>
+</div>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#status"><i aria-hidden="true"></i>Korea Canary</a>
+    <div class="live" id="live"></div>
+    <nav class="links" aria-label="주요 섹션">
+      <a href="#status">Status</a><a href="#signals">Signals</a><a href="#history">History</a><a href="#method">Method</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="loaderr" id="loaderr" role="alert" hidden>점검 데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</div>
+
+  <!-- 01–03 : Layer 1, 5초 요약 -->
+  <section id="status" aria-label="현재 상태 요약">
+    <div class="hero" id="hero"></div>
+    <div class="ladder-wrap">
+      <div id="ladder"></div>
+      <div class="card steppanel" id="steppanel" role="region" aria-label="단계 설명" hidden></div>
+    </div>
+    <div class="pair">
+      <div class="card panelcard" id="changed" aria-labelledby="changed-h"></div>
+      <div class="card todo" id="todo" aria-labelledby="todo-h"></div>
+    </div>
+  </section>
+
+  <!-- 04 : Layer 2 -->
+  <section id="signals">
+    <div class="sh"><span class="no">04</span><h2>Signal Board</h2><span class="kr">신호 센서 현황</span></div>
+    <ul class="legend" aria-label="상태 표시 설명" id="legend"></ul>
+    <div class="grid" id="grid"></div>
+    <div class="card notobs" id="notobs" hidden></div>
+  </section>
+
+  <!-- 05–06 -->
+  <section id="history">
+    <div class="sh"><span class="no">05</span><h2>Risk Trend</h2><span class="kr">위험 단계 추이</span>
+      <span class="right seg" role="group" aria-label="기간 선택">
+        <button type="button" id="r24" aria-pressed="true">24H</button><button type="button" id="r7" aria-pressed="false">7D</button>
+      </span>
+    </div>
+    <div class="card trend" id="trend"></div>
+
+    <div class="sh" style="margin-top:48px"><span class="no">06</span><h2>Timeline</h2><span class="kr">점검 기록</span></div>
+    <div id="timeline"></div>
+  </section>
+
+  <!-- 07–09 : Layer 3 -->
+  <section id="method">
+    <div class="sh"><span class="no">07</span><h2>Decision Logic</h2><span class="kr">단계가 정해지는 조건</span></div>
+    <div class="card dlogic" id="logic"></div>
+
+    <div class="sh" style="margin-top:48px"><span class="no">08</span><h2>Sources</h2><span class="kr">근거와 원자료</span></div>
+    <div id="sources"></div>
+
+    <div class="sh" style="margin-top:48px"><span class="no">09</span><h2>How Korea Canary Works</h2><span class="kr">방식과 한계</span></div>
+    <p class="lede" data-rich>목표는 전쟁을 맞히는 것이 아니라, 한국에 있는 일반인이 공개정보만으로 평소보다 먼저 움직일 이유가 생겼는지를 되도록 빨리 알리는 것입니다. 그래서 신호 하나가 아니라 서로 독립적인 신호의 조합을 보고, 단계가 높아질수록 더 많은 증거를 요구합니다.</p>
+
+    <details class="acc">
+      <summary>A/B/C 분류</summary>
+      <div class="in" data-rich>
+        <ul>
+          <li><b>A급, 전쟁을 치르기 위한 실제 준비.</b> 전방 탄약·연료·정비 이동, 야전의료, 여러 기지의 항공기 분산, 미사일 발사대(TEL) 분산, 주요 함정의 동시 출항, 접경 민간 통제. 가장 먼저 찾고 가장 무겁게 봅니다.</li>
+          <li><b>B급, 상대편도 전쟁을 우려한다는 행동.</b> USFK 가족 정책 변화, 미국 전력 증원, DoDEA 운영 변경, 대사관 인력·가족 조치, 항공·해운·보험의 고비용 변화. 확실하지만 늦을 수 있어 확증용으로 씁니다.</li>
+          <li><b>C급, 전쟁 없이도 자주 일어나는 행동.</b> 미사일·핵 시험, 포병훈련, 위협 발언, 열병식, 단독 금융시장 변동. 낮은 가중치만 줍니다.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="acc">
+      <summary>단계 상승 조건</summary>
+      <div class="in">
+        <p>07번 Decision Logic이 위 조건을 도식으로 보여줍니다. 문장으로 정리하면 다음과 같습니다.</p>
+        <ul>
+          <li>A급 신호 1개는 단계를 크게 올리지 않습니다.</li>
+          <li>독립적인 A급 2개 → 선제 준비 검토</li>
+          <li>A급 3개 이상(서로 다른 군종·지역) → 강한 신호</li>
+          <li>A급 2개 이상 + B급 2개 이상 → 이동 선택지 확보 검토</li>
+          <li>A급 다수 + 공격 직전형 배치 + B급 확증 → 즉시 대응 검토</li>
+        </ul>
+        <p><b>점수를 깎는 요인.</b> 평시 훈련으로 설명됨, 열병식 준비 지역으로의 이동, 한 부대·시험장에 국한됨, 북한 내부 민간 동원 없음, 추가 확산 없이 며칠간 안정.</p>
+      </div>
+    </details>
+    <details class="acc">
+      <summary>신호로 세지 않는 것</summary>
+      <div class="in" data-rich>
+        <ul>
+          <li>미사일·방사포 시험, 위협 발언, 오물풍선. 전쟁 없이도 반복되는 행동이라 낮은 가중치만 줍니다.</li>
+          <li>NEO 문서가 있거나 업데이트됐다는 사실. 평시에도 공개된 문서입니다. 평소 내용과 무엇이 달라졌는지, 가족에게 별도 지시가 내려왔는지를 봅니다.</li>
+          <li>정부·대사관 안내 페이지의 갱신 날짜만 바뀐 경우. 독일 외무부 페이지가 9월 23일자로 표시됐지만 내용은 7월 이후 그대로였던 사례가 있습니다.</li>
+          <li>오래된 위성사진이나 자료가 오늘 검색된 경우. 발생일과 최초 공개일을 따로 기록합니다.</li>
+          <li>열병식 준비를 위한 장비 이동, 출처가 확인되지 않은 SNS 영상, 주가·환율의 단독 변동.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="acc">
+      <summary>백테스트</summary>
+      <div class="in">
+        <p>과거 전쟁 20건과 전쟁으로 번지지 않은 한반도 위기 20건을, 당시 공개돼 있던 정보만으로 재구성해 이 기준에 넣어 봤습니다. 탐색적 검토이며 정식 검증이 아닙니다.</p>
+        <ul>
+          <li>일주일 이상 앞선 탐지는 30~40% 수준으로 추정됐습니다. 정확도 수치로 읽으면 안 됩니다.</li>
+          <li>2017년 괌 위협처럼 말과 시험은 강했지만 북한 내부 동원과 미국 측 대피가 없던 위기는 높은 단계로 올라가지 않도록 설계했습니다.</li>
+          <li>2015년 8월 위기(포격 교환과 준전시상태)는 군사 신호가 여러 개 겹친 사례로, 가장 어려운 오경보 후보였습니다.</li>
+          <li>수단과 2023년 이스라엘처럼 대사관·가족 조치가 전쟁 뒤에 나온 사례도 있어, 이 신호만 기다리지 않습니다.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="acc">
+      <summary>한계</summary>
+      <div class="in">
+        <ul>
+          <li>기습은 잡지 못합니다. 공격 측이 준비를 숨기면 공개정보로는 볼 수 없습니다.</li>
+          <li>북한 내부는 공개정보에서 잘 보이지 않습니다. A급에서 ‘확인 안 됨’은 ‘없음’이 아니라 ‘공개정보에 나타나지 않음’입니다.</li>
+          <li>이 페이지는 공식 발표가 아닙니다. 공식 대피·안전 안내가 나오면 그것을 우선하세요.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="acc">
+      <summary>점검 기준 변경 이력</summary>
+      <div class="in" data-rich>
+        <ul>
+          <li><b>9월 24일 오전 12:05.</b> 한국어 공개정보에 더해 미국 측 영문 원문(미 8군, 국무부, 미국계 위성분석)을 별도 축으로 추가했습니다.</li>
+          <li><b>9월 24일 오후 3:06.</b> 과거 사건 재구성 결과를 반영해 순서를 바꿨습니다. 북한의 실제 준비행동을 앞에 두고, 외국인 가족·대사관 신호는 확증 센서로 내렸습니다. 평시 기준선은 9월 24일부터 쌓기 시작했습니다.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>공개정보(OSINT)에 근거한 비공식 참고 자료입니다. 정부·군·대사관의 공식 안내를 대체하지 않습니다.</p>
+  <p>점검 간격은 약 1시간이며 지연될 수 있습니다. 데이터: <a href="data/reports.json">data/reports.json</a></p>
+</footer>
+
+<div id="tip" role="tooltip" hidden></div>
+
+<script>
+'use strict';
+/* ================= 설정 ================= */
+var DATA_URL = 'data/reports.json';   // 다른 곳에 두었다면 절대 주소로 바꾸세요
+var POLL_MS = 5 * 60 * 1000;          // 새 점검 확인 주기
+var STALE_MIN = 90;                   // 이 시간 넘게 갱신이 없으면 DATA STALE
+var CHECK_EVERY_MIN = 60;
+
+/* ================= 정적 사전 ================= */
+var STAGES = [
+  { short: '정상', name: '정상',
+    meaning: '평소와 다른 군사·외교·민간 신호가 없는 상태입니다.',
+    cond: 'A·B·C급 모두 평소 수준입니다.',
+    todo: '평소처럼 지내면 됩니다.',
+    next: 'C급 신호가 늘거나 새 사건이 생기면 ‘초기 이상’이 됩니다.' },
+  { short: '초기 이상', name: '초기 이상',
+    meaning: '군사 활동이 평소보다 잦거나 새 사건이 있지만, 전쟁 준비로 볼 만한 실제 행동은 확인되지 않은 상태입니다.',
+    cond: 'C급 신호가 잦거나 새 사건이 있고, A급 실제 준비는 확인되지 않습니다.',
+    todo: '행동을 바꿀 필요는 없습니다. 비상연락망, 여권·신분증 위치, 휴대전화 충전 정도만 유지하세요.',
+    next: '서로 독립적인 A급 신호가 2개 이상 동시에 나타나면 ‘선제 준비 검토’가 됩니다.' },
+  { short: '선제 준비', name: '선제 준비 검토',
+    meaning: '서로 독립적인 A급 신호가 2개 이상 동시에 나타난 상태입니다.',
+    cond: '독립적인 A급 신호 2개 이상. 3개 이상이 서로 다른 군종·지역에서 나타나면 ‘강한 신호’로 봅니다.',
+    todo: '비용이 작은 준비를 먼저 합니다. 여권 확인, 현금·충전기 준비, 항공편 선택지 확인 같은 것들입니다.',
+    next: 'A급 2개 이상에 더해 B급 신호가 2개 이상 겹치면 ‘이동 선택지 확보 검토’가 됩니다.' },
+  { short: '이동 검토', name: '이동 선택지 확보 검토',
+    meaning: 'A급 2개 이상에 더해 미군·외교기관의 실제 대응(B급)이 2개 이상 겹친 상태입니다.',
+    cond: 'A급 2개 이상 + B급 2개 이상.',
+    todo: '이동 경로와 수단이 아직 충분히 열려 있을 때, 실제로 확보할지 검토합니다.',
+    next: 'A급 다수와 공격 직전형 배치, B급 확증이 함께 나타나면 ‘즉시 대응 검토’가 됩니다.' },
+  { short: '즉시 대응', name: '즉시 대응 검토',
+    meaning: 'A급 신호 다수와 공격 직전형 배치, B급 확증이 함께 나타난 상태입니다.',
+    cond: 'A급 다수 + 공격 직전형 작전배치 + B급 확증.',
+    todo: '공식 안내와 대사관 공지를 바로 확인하고, 미리 정해 둔 대응을 실행할지 판단합니다.',
+    next: '최고 단계입니다. 공식 대피·안전 안내가 있으면 그것을 우선하세요.' }
+];
+
+var DEFAULT_ACTIONS = [
+  { summary: '지금은 특별히 할 일이 없습니다.', do: ['평소 생활 유지'], skip: ['출국', '이동', '비축 확대'] },
+  { summary: '현재 이동이나 출국을 검토할 단계는 아닙니다.', do: ['평소 생활 유지', '비상연락망 확인', '여권·신분증 위치 확인', '휴대전화 충전'], skip: ['출국', '이동', '비축 확대'] },
+  { summary: '비용이 작은 준비를 먼저 해 두는 단계입니다.', do: ['여권 유효기간 확인', '현금·충전기 준비', '항공편 선택지 확인', '공식 안내 자주 확인'], skip: ['즉시 출국 결정', '과도한 비축'] },
+  { summary: '이동 경로가 열려 있을 때 확보 여부를 검토하는 단계입니다.', do: ['이동 경로·수단 확인', '가족 연락·집결 계획 정리', '대사관·정부 공지 수시 확인'], skip: ['확인되지 않은 정보에 따른 이동'] },
+  { summary: '공식 안내를 즉시 확인하고 대응 여부를 판단하는 단계입니다.', do: ['공식 안내·대사관 공지 확인', '미리 정한 대응 계획 점검', '가족과 연락 유지'], skip: ['확인되지 않은 정보 확산'] }
+];
+
+var TIERS = {
+  A: { en: 'WAR PREPARATION', ko: '실제 전쟁 준비', tag: 'HIGH VALUE', term: 'A급' },
+  B: { en: 'EXTERNAL RESPONSE', ko: '미국·동맹·민간 대응', tag: 'CONFIRMATION', term: 'B급' },
+  C: { en: 'BACKGROUND SIGNALS', ko: '군사적 긴장·시험', tag: 'LOW WEIGHT', term: 'C급' }
+};
+
+var ST = {
+  active:    { en: 'ACTIVE',       ko: '변화 있음' },
+  unchanged: { en: 'UNCHANGED',    ko: '변화 없음' },
+  notobs:    { en: 'NOT OBSERVED', ko: '확인 안 됨' },
+  watching:  { en: 'WATCHING',     ko: '추적 중' },
+  unknown:   { en: 'UNKNOWN',      ko: '확인 필요' }
+};
+var CONF = {
+  high:   { n: 3, en: 'HIGH CONFIDENCE',   ko: '신뢰도 높음' },
+  medium: { n: 2, en: 'MEDIUM CONFIDENCE', ko: '신뢰도 보통' },
+  low:    { n: 1, en: 'LOW CONFIDENCE',    ko: '신뢰도 낮음 (공개정보 제한)' }
+};
+
+var GLOSS = {
+  'A급':  { t: 'A급 신호', d: '전쟁이 실제로 임박했을 때 비용을 감수하고 해야 하는 준비 행동을 뜻합니다. 전방 탄약·연료 이동, 항공기 분산 같은 것들입니다.' },
+  'B급':  { t: 'B급 신호', d: '미국·동맹·외교기관·민간이 위기를 우려해 실제로 취하는 고비용 대응입니다. 확실하지만 늦게 나타날 수 있어 확증용으로 씁니다.' },
+  'C급':  { t: 'C급 신호', d: '전쟁이 없어도 자주 일어나는 시험·훈련·위협 발언입니다. 눈에 띄지만 낮은 가중치로만 반영합니다.' },
+  'NEO':  { t: 'NEO', d: 'Noncombatant Evacuation Operation. 미군 가족 등 비전투원을 위기 지역에서 이동시키는 절차입니다. 평시에도 훈련과 문서가 있어서, 문서가 존재한다는 사실만으로는 경보가 아닙니다.' },
+  'ERD':  { t: 'ERD', d: 'Early Return of Dependents. 군인 가족을 조기에 귀국시키는 제도입니다. 개별 사유로도 쓰이는 평시 제도라서, 집단 적용인지가 핵심입니다.' },
+  'Command Sponsorship': { t: 'Command Sponsorship', d: '군인이 가족을 공식적으로 한국에 데려와 함께 근무하도록 승인하는 제도입니다. 이 제도가 중단되거나 제한되면 의미 있는 신호입니다.' },
+  'Concurrent Travel': { t: 'Concurrent Travel', d: '군인과 가족이 같은 시기에 함께 부임하는 것을 허용하는 제도입니다. 제한되면 가족 유입이 막혔다는 뜻입니다.' },
+  'DoDEA': { t: 'DoDEA', d: 'Department of Defense Education Activity. 미 국방부가 운영하는 미군학교입니다. 안보 사유의 긴급 휴교나 운영 변경은 강한 확증 신호입니다.' },
+  'USFK': { t: 'USFK', d: 'United States Forces Korea. 주한미군입니다.' },
+  'TEL':  { t: 'TEL', d: 'Transporter Erector Launcher. 이동식 미사일 발사대입니다.' },
+  'ISR':  { t: 'ISR', d: 'Intelligence, Surveillance, Reconnaissance. 정보·감시·정찰 자산입니다.' },
+  'OSINT': { t: 'OSINT', d: 'Open Source Intelligence. 뉴스, 정부 발표, 위성사진처럼 누구나 접근할 수 있는 공개출처 정보입니다.' },
+  'NLL':  { t: 'NLL', d: '북방한계선. 서해에서 남북이 해상 경계로 대치하는 선입니다.' }
+};
+
+/* ================= 유틸 ================= */
+var $ = function (id) { return document.getElementById(id); };
+function h(tag, props) {
+  var el = document.createElement(tag);
+  if (props) Object.keys(props).forEach(function (k) {
+    var v = props[k];
+    if (v === false || v == null) return;
+    if (k === 'class') el.className = v;
+    else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  });
+  for (var i = 2; i < arguments.length; i++) {
+    var kids = [].concat(arguments[i]);
+    for (var j = 0; j < kids.length; j++) {
+      var kid = kids[j];
+      if (kid == null || kid === false) continue;
+      el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    }
+  }
+  return el;
+}
+function arr(x) { return Array.isArray(x) ? x : []; }
+function rich(tag, cls, text) { return h(tag, { class: cls, 'data-rich': '' }, text); }
+function safeUrl(u) { try { var x = new URL(u); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : null; } catch (e) { return null; } }
+
+var ASOF = (function () {
+  var m = /[?&]asof=([^&]+)/.exec(location.search);
+  var t = m ? Date.parse(decodeURIComponent(m[1])) : NaN;
+  return isNaN(t) ? null : t;   // 미리보기용: ?asof=2026-09-24T17:00:00+09:00
+})();
+function now() { return ASOF != null ? ASOF : Date.now(); }
+
+var fHM = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+var fDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' });
+function hm(ms) { return fHM.format(new Date(ms)); }
+function dayKey(ms) { return fDay.format(new Date(ms)); }
+function mdOfKey(k) { var p = k.split('-'); return parseInt(p[1], 10) + '/' + parseInt(p[2], 10); }
+function mdOfIso(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); return m ? parseInt(m[2], 10) + '/' + parseInt(m[3], 10) : (s || ''); }
+function rel(mins) {
+  mins = Math.max(0, Math.round(mins));
+  if (mins < 1) return '방금 전';
+  if (mins < 60) return mins + '분 전';
+  if (mins < 48 * 60) return Math.floor(mins / 60) + '시간 ' + (mins % 60) + '분 전';
+  return Math.floor(mins / 1440) + '일 전';
+}
+
+function stageOf(r) {
+  var s = parseInt(r && r.stage, 10);
+  if (s >= 0 && s <= 4) return s;
+  if (r && r.state === '정상') return 0;
+  if (r && r.state === '강한 신호') return 2;
+  return 1;   // 예전 기록('주의해서 볼 변화 있음')은 초기 이상으로 환산
+}
+function stageInferred(r) { return !(parseInt(r && r.stage, 10) >= 0); }
+function deltaTotal(r) { var d = r.delta; return d ? (+d.a || 0) + (+d.b || 0) + (+d.c || 0) : null; }
+
+function statusOf(kind, label) {
+  if (kind === 'moved') return 'active';
+  if (kind === 'watching') return 'watching';
+  if (kind === 'unknown') return 'unknown';
+  return /확인\s*안\s*됨/.test(label || '') ? 'notobs' : 'unchanged';
+}
+function tierOf(g, i) { var m = /^\s*([ABC])\s*급/.exec(g && g.group || ''); return m ? m[1] : 'ABC'.charAt(i) || 'C'; }
+function stIcon(s) { return h('span', { class: 'st ' + s, 'aria-hidden': 'true' }); }
+function confEl(key, full) {
+  var c = CONF[key]; if (!c) return null;
+  var bars = h('span', { class: 'bars', 'aria-hidden': 'true' }, [1, 2, 3].map(function (i) { return h('i', { class: i <= c.n ? 'f' : '' }); }));
+  return h('span', { class: 'conf', title: c.ko }, bars, h('span', null, full ? c.en : c.en.replace(' CONFIDENCE', '')), h('span', { class: 'sr' }, ' 신뢰도 ' + c.ko));
+}
+function arrowSvg() {
+  return h('span', { html: null }, (function () {
+    var ns = 'http://www.w3.org/2000/svg', s = document.createElementNS(ns, 'svg');
+    s.setAttribute('width', '20'); s.setAttribute('height', '20'); s.setAttribute('viewBox', '0 0 20 20'); s.setAttribute('aria-hidden', 'true');
+    var p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', 'M3 10h13M11 5l5 5-5 5'); p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'currentColor'); p.setAttribute('stroke-width', '2');
+    s.append(p); return s;
+  })());
+}
+
+/* ================= 상태 ================= */
+var REPORTS = [], R0 = null, lastTs = null;
+var trendRange = '24h', tlLimit = 12;
+
+function groups() {
+  return arr(R0.sensors).map(function (g, i) {
+    var t = tierOf(g, i);
+    var rows = arr(g.rows).map(function (r) { return { name: r[0], st: statusOf(r[1], r[2]), label: r[2], memo: r[3] || '', meta: r[4] || null }; });
+    var count = { active: 0, unchanged: 0, notobs: 0, watching: 0, unknown: 0 };
+    rows.forEach(function (r) { count[r.st]++; });
+    return { tier: t, g: g, rows: rows, count: count };
+  });
+}
+function activeOf(gs, tier) { var x = gs.filter(function (g) { return g.tier === tier; })[0]; return x ? x.count.active : 0; }
+
+/* ================= 01 HERO ================= */
+function renderHero() {
+  var stage = stageOf(R0), S = STAGES[stage];
+  document.body.setAttribute('data-stage', String(stage + 1));
+  var hero = $('hero');
+  hero.className = 'hero' + (stage >= 3 ? ' hi' : '');
+  hero.replaceChildren(
+    h('div', { class: 'hero-l' },
+      h('div', { class: 'lab-row' }, h('span', { class: 'no' }, '01'), h('span', { class: 'lab' }, 'Current Status'), h('span', { class: 'lab-kr' }, '현재 상태')),
+      h('div', { class: 'bigrow' },
+        h('div', { class: 'bignum', role: 'img', 'aria-label': '5단계 중 ' + (stage + 1) + '단계' }, String(stage + 1), h('span', { class: 'of' }, '/5')),
+        h('div', { class: 'sname' }, S.name)),
+      R0.state ? h('div', { class: 'state-tag' }, h('i', { 'aria-hidden': 'true' }), R0.state) : null),
+    h('div', { class: 'hero-r' },
+      rich('p', 'quote', R0.headline),
+      h('div', { class: 'meta', id: 'meta' })));
+}
+
+function renderFresh() {
+  if (!R0) return;
+  var ts = Date.parse(R0.ts), mins = (now() - ts) / 60000;
+  var stale = mins > STALE_MIN;
+  var nextTs = ts + CHECK_EVERY_MIN * 60000;
+  var overdue = now() > nextTs;
+  $('meta').replaceChildren(
+    h('span', null, '마지막 점검 ', h('b', null, hm(ts)), ' · ' + rel(mins)),
+    h('span', null, '다음 자동 점검 ', overdue ? h('span', { class: 'late' }, '예정 시각 지남') : h('b', null, hm(nextTs) + ' 예정')));
+  var live = $('live');
+  live.className = 'live' + (stale ? ' stale' : '');
+  live.replaceChildren(h('span', { class: 'pip', 'aria-hidden': 'true' }), h('span', null, h('span', { class: 'lastl' }, 'Last checked '), hm(ts)), h('b', null, stale ? 'STALE' : 'LIVE'));
+  var bar = $('stalebar');
+  bar.hidden = !stale;
+  if (stale) $('stalemsg').textContent = '점검 지연 · 마지막 업데이트 ' + rel(mins);
+}
+
+/* ---- 단계 사다리 ---- */
+function renderLadder() {
+  var stage = stageOf(R0), panel = $('steppanel'), open = -1, btns = [];
+  var ol = h('ol', { class: 'ladder' });
+  STAGES.forEach(function (s, i) {
+    var cls = i < stage ? 'past' : (i === stage ? 'now' : 'future');
+    var b = h('button', { type: 'button', class: 'node', 'aria-expanded': 'false', 'aria-controls': 'steppanel',
+      'aria-label': (i + 1) + '단계 ' + s.name + (i === stage ? ', 현재 단계' : '') + ', 설명 보기',
+      onclick: function () { open = (open === i) ? -1 : i; sync(); } },
+      h('span', { class: 'nn' }, String(i + 1)),
+      h('span', { class: 'dot', 'aria-hidden': 'true' }),
+      h('span', { class: 'nl' }, s.short),
+      i === stage ? h('span', { class: 'nowtag' }, 'NOW') : null);
+    btns.push(b);
+    ol.append(h('li', { class: cls }, b));
+  });
+  $('ladder').replaceChildren(ol);
+  function sync() {
+    btns.forEach(function (b, i) { b.setAttribute('aria-expanded', String(i === open)); });
+    if (open < 0) { panel.hidden = true; return; }
+    var s = STAGES[open], gs = groups();
+    panel.className = 'card steppanel c' + (open + 1);
+    panel.replaceChildren(
+      h('div', { class: 'ph' },
+        h('span', { class: 'badge' }, (open + 1) + ' / 5'),
+        h('h3', null, s.name),
+        open === stage ? h('span', { class: 'pill new' }, 'NOW') : null,
+        h('button', { type: 'button', class: 'x', onclick: function () { open = -1; sync(); btns[0].focus(); } }, '닫기')),
+      h('dl', null,
+        h('div', null, h('dt', null, '이 단계의 의미'), rich('dd', '', s.meaning)),
+        h('div', null, h('dt', null, '이 단계가 되는 조건'), rich('dd', '', s.cond)),
+        h('div', null, h('dt', null, '고려할 행동'), rich('dd', '', s.todo)),
+        h('div', null, h('dt', null, '다음 단계로 올라가는 조건'), rich('dd', '', s.next)),
+        open === stage && gs.length ? h('div', { class: 'live-line' }, '지금 관측 중(ACTIVE)인 신호: A급 ' + activeOf(gs, 'A') + '개 · B급 ' + activeOf(gs, 'B') + '개 · C급 ' + activeOf(gs, 'C') + '개') : null));
+    decorate(panel);
+    panel.hidden = false;
+  }
+  sync();
+}
+
+/* ================= 02 WHAT CHANGED ================= */
+function renderChanged() {
+  var d = R0.delta, box = $('changed');
+  var prev = REPORTS[1];
+  var head = h('div', { class: 'pc-head' },
+    h('span', { class: 'no' }, '02'), h('span', { class: 'lab', id: 'changed-h' }, 'What Changed'), h('span', { class: 'lab-kr' }, '직전 점검 이후'),
+    prev ? h('span', { class: 'since' }, hm(Date.parse(prev.ts)) + ' → ' + hm(Date.parse(R0.ts))) : null);
+
+  var tiers = ['A', 'B', 'C'], key = { A: 'a', B: 'b', C: 'c' };
+  var cnts = h('div', { class: 'counts', role: 'group', 'aria-label': '직전 점검 이후 새로 관측된 신호 수' }, tiers.map(function (t) {
+    var n = d ? (+d[key[t]] || 0) : null;
+    return h('div', { class: 'cnt t' + t + (n > 0 ? ' on' : '') },
+      h('span', { class: 'k' }, '새 ' + t + '급'), h('span', { class: 'n' }, n == null ? '–' : String(n)));
+  }));
+
+  var newItems = d ? arr(d.new) : arr(R0.changes).map(function (t) { return { tier: '', text: t }; });
+  var total = d ? deltaTotal(R0) : null;
+  var body = [];
+  if (d && total === 0 && !newItems.length) {
+    body.push(h('p', { class: 'verdict calm' }, d.summary || '중요한 변화 없음'));
+  } else {
+    body.push(h('ul', { class: 'newlist' }, newItems.map(function (it) {
+      return h('li', null, h('span', { class: 'pill new' }, 'NEW'), h('span', { 'data-rich': '' }, it.tier ? h('span', { class: 'tier ' + it.tier, 'aria-label': it.tier + '급' }, it.tier) : null, it.text));
+    })));
+  }
+  var un = d ? arr(d.unchanged) : [];
+  if (un.length) {
+    body.push(h('details', { class: 'more' },
+      h('summary', null, '변하지 않은 것 ' + un.length + '건'),
+      h('div', { class: 'in' }, h('ul', { class: 'unch', style: 'margin-top:0' }, un.map(function (t) {
+        return h('li', null, h('span', { class: 'pill same' }, 'UNCHANGED'), h('span', { 'data-rich': '' }, t));
+      })))));
+  }
+  if (arr(R0.changes).length) {
+    body.push(h('details', { class: 'more' },
+      h('summary', null, '자세한 점검 내용'),
+      h('div', { class: 'in' }, h('ul', null, R0.changes.map(function (t) { return h('li', { 'data-rich': '' }, t); })))));
+  }
+  box.replaceChildren.apply(box, [head, cnts].concat(body));
+}
+
+/* ================= 03 WHAT TO DO ================= */
+function renderTodo() {
+  var stage = stageOf(R0), a = R0.actions || {}, def = DEFAULT_ACTIONS[stage];
+  var sum = a.summary || def.summary, doL = arr(a.do).length ? a.do : def.do, skipL = arr(a.skip).length ? a.skip : def.skip;
+  var box = $('todo');
+  box.replaceChildren(
+    h('div', { class: 'pc-head' }, h('span', { class: 'no' }, '03'), h('span', { class: 'lab', id: 'todo-h' }, 'What To Do'), h('span', { class: 'lab-kr' }, '지금 할 일')),
+    h('p', { class: 'sum' }, sum),
+    h('div', { class: 'acts' },
+      h('div', { class: 'yes' }, h('span', { class: 'lab' }, '지금 필요'), h('ul', null, doL.map(function (t) { return h('li', { 'data-rich': '' }, t); }))),
+      skipL.length ? h('div', { class: 'no' }, h('span', { class: 'lab' }, '현재 단계에서는 필요하지 않음'), h('ul', null, skipL.map(function (t) { return h('li', null, t); }))) : null),
+    R0.action ? h('details', { class: 'more' }, h('summary', null, '판단을 바꿀 신호'), h('div', { class: 'in' }, rich('p', '', R0.action))) : '');
+}
+
+/* ================= 04 SIGNAL BOARD ================= */
+function renderSignals() {
+  $('legend').replaceChildren.apply($('legend'), Object.keys(ST).map(function (k) {
+    return h('li', null, stIcon(k), h('b', null, ST[k].en), h('span', null, ST[k].ko));
+  }));
+  var gs = groups(), grid = $('grid');
+  grid.replaceChildren.apply(grid, gs.map(function (G, gi) {
+    var T = TIERS[G.tier] || TIERS.C, id = 'sg-' + gi;
+    var pips = h('span', { class: 'pips', 'aria-hidden': 'true' }, G.rows.map(function (r) { return stIcon(r.st); }));
+    var notobs = G.count.notobs, parts = [];
+    ['notobs', 'unchanged', 'watching', 'unknown'].forEach(function (k) { if (G.count[k]) parts.push(G.count[k] + ' ' + ST[k].en); });
+    var hd = h('button', { type: 'button', class: 'hd', 'aria-expanded': 'false', 'aria-controls': id + '-b',
+      onclick: function () {
+        var open = hd.getAttribute('aria-expanded') === 'true';
+        hd.setAttribute('aria-expanded', String(!open)); $('' + id + '-b').hidden = open;
+        hd.querySelector('.more-t').textContent = open ? '센서 ' + G.rows.length + '개 보기' : '센서 접기';
+      } },
+      h('span', { class: 'letter', 'aria-hidden': 'true' }, G.tier),
+      h('span', null,
+        h('span', { class: 't1' }, T.en),
+        h('span', { class: 't2' }, G.tier + '급 · ' + T.ko),
+        h('span', { class: 't3' }, pips, h('span', { class: 'tag' }, T.tag), h('span', null, parts.join(' · ')))),
+      h('span', { class: 'bigcount' }, h('b', null, String(G.count.active)), h('span', null, 'ACTIVE'), h('br'),
+        h('span', { style: 'display:inline-flex;align-items:center;margin-top:8px;font-size:11px;font-weight:600;letter-spacing:0;color:var(--ink2)' }, h('span', { class: 'more-t' }, '센서 ' + G.rows.length + '개 보기'), h('i', { class: 'chev', 'aria-hidden': 'true' }))));
+    var active = G.rows.filter(function (r) { return r.st === 'active'; });
+    var body = h('div', { class: 'bd', id: id + '-b', hidden: '' },
+      G.g.group ? h('p', { class: 'grp' }, G.g.group) : null,
+      G.g.note ? rich('p', 'note', G.g.note) : null,
+      h('ul', { class: 'rows' }, G.rows.map(function (r) {
+        var m = r.meta || {};
+        var dates = [];
+        if (m.event) dates.push('발생 ' + mdOfIso(m.event));
+        if (m.detected) dates.push('최초 확인 ' + mdOfIso(m.detected));
+        if (m.src) dates.push('출처 ' + m.src);
+        return h('li', { class: 'row' },
+          rich('span', 'nm', r.name),
+          confEl(m.conf, false),
+          h('span', { class: 'stt' }, stIcon(r.st), h('b', null, ST[r.st].en), h('span', null, r.label || ST[r.st].ko)),
+          r.memo ? rich('span', 'memo', r.memo) : null,
+          dates.length ? h('span', { class: 'dates' }, dates.join(' · ')) : null);
+      })));
+    return h('article', { class: 'sg sg-' + G.tier }, hd,
+      active.length ? h('ul', { class: 'activelist', 'aria-label': 'ACTIVE 센서' }, active.map(function (r) { return h('li', null, stIcon('active'), h('span', { 'data-rich': '' }, r.name)); })) : null,
+      body);
+  }));
+  // A/B/C 이름 옆 용어 설명
+  grid.querySelectorAll('.sg .t2').forEach(function (el) { el.setAttribute('data-rich', ''); });
+
+  var ab = arr(R0.absent), no = $('notobs');
+  if (!ab.length) { no.hidden = true; return; }
+  no.hidden = false;
+  no.replaceChildren(
+    h('div', { class: 'pc-head' }, h('span', { class: 'lab' }, 'Not Observed'), h('span', { class: 'lab-kr' }, '현재 공개정보에서 관측되지 않음')),
+    h('p', { class: 'why' }, h('span', { class: 'i', 'aria-hidden': 'true' }, 'i'), h('span', null, '공개정보에서 관측되지 않았다는 뜻이며, 실제로 존재하지 않는다는 의미는 아닙니다. 특히 북한 내부는 공개정보로 잘 보이지 않습니다.')),
+    h('ul', { class: 'notlist' }, ab.map(function (t) { return h('li', { 'data-rich': '' }, t); })));
+}
+
+/* ================= 05 RISK TREND ================= */
+function renderTrend() {
+  var box = $('trend'), span = trendRange === '24h' ? 24 * 36e5 : 7 * 864e5;
+  var last = Date.parse(R0.ts), end = Math.max(now(), last), start = end - span;
+  var pts = REPORTS.map(function (r) { return { t: Date.parse(r.ts), v: stageOf(r) + 1, inf: stageInferred(r) }; }).sort(function (a, b) { return a.t - b.t; });
+  var before = null, inw = [];
+  pts.forEach(function (p) { if (p.t < start) before = p; else if (p.t <= end) inw.push(p); });
+  var v0 = before ? before.v : (inw[0] ? inw[0].v : stageOf(R0) + 1);
+
+  var W = 720, H = 210, L = 30, Rr = 18, T = 14, B = 30, iw = W - L - Rr, ih = H - T - B;
+  var X = function (t) { return L + (t - start) / (end - start) * iw; };
+  var Y = function (v) { return T + (5 - v) / 4 * ih; };
+  var ns = 'http://www.w3.org/2000/svg';
+  function el(n, a, txt) { var e = document.createElementNS(ns, n); Object.keys(a || {}).forEach(function (k) { e.setAttribute(k, a[k]); }); if (txt != null) e.textContent = txt; return e; }
+  var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img' });
+
+  var cur = stageOf(R0) + 1;
+  svg.append(el('rect', { class: 'band', x: L, y: Y(cur) - 13, width: iw, height: 26, rx: 3 }));
+  for (var lv = 1; lv <= 5; lv++) {
+    svg.append(el('line', { class: 'gl', x1: L, x2: W - Rr, y1: Y(lv), y2: Y(lv) }));
+    svg.append(el('text', { class: lv === cur ? 'axn' : 'ax', x: L - 10, y: Y(lv) + 4, 'text-anchor': 'end' }, String(lv)));
+  }
+  var off = 9 * 36e5, stepMs = trendRange === '24h' ? 6 * 36e5 : 864e5;
+  for (var t = Math.ceil((start + off) / stepMs) * stepMs - off; t <= end; t += stepMs) {
+    var x = X(t), kd = new Date(t + off);
+    var lab = trendRange === '24h' ? String(kd.getUTCHours()).padStart(2, '0') : (kd.getUTCMonth() + 1) + '/' + kd.getUTCDate();
+    svg.append(el('line', { class: 'gl', x1: x, x2: x, y1: T, y2: H - B + 4 }));
+    svg.append(el('text', { class: 'ax', x: x, y: H - 8, 'text-anchor': 'middle' }, lab));
+  }
+  svg.append(el('text', { class: 'axn', x: W - Rr, y: H - 8, 'text-anchor': 'end' }, 'NOW'));
+
+  var d = 'M' + X(start).toFixed(1) + ' ' + Y(v0).toFixed(1), curV = v0, changes = before && inw.length && inw[0].v !== before.v ? 1 : 0, prevV = v0, infer = false;
+  inw.forEach(function (p, i) {
+    d += ' H' + X(p.t).toFixed(1) + ' V' + Y(p.v).toFixed(1);
+    if (p.v !== prevV && (i > 0 || before)) changes += (i === 0 && before) ? 0 : 1;
+    prevV = p.v; curV = p.v; if (p.inf) infer = true;
+  });
+  changes = 0; var pv = v0; inw.forEach(function (p) { if (p.v !== pv) changes++; pv = p.v; });
+  svg.append(el('path', { class: 'ln', d: d }));
+  var lastX = inw.length ? X(inw[inw.length - 1].t) : X(start), gap = (end - Math.max(last, start)) / 60000 > STALE_MIN;
+  if (lastX < X(end) - 1) svg.append(el('line', { class: 'ext' + (gap ? ' gap' : ''), x1: lastX, x2: X(end), y1: Y(curV), y2: Y(curV) }));
+  var pv2 = v0;
+  inw.forEach(function (p) { var ch = p.v !== pv2; pv2 = p.v; svg.append(el('circle', { class: 'pt' + (ch ? ' ch' : ''), cx: X(p.t), cy: Y(p.v), r: ch ? 5.5 : 3.4 })); });
+
+  var lo = Math.min.apply(null, inw.map(function (p) { return p.v; }).concat([v0])), hi = Math.max.apply(null, inw.map(function (p) { return p.v; }).concat([v0]));
+  var label = (trendRange === '24h' ? '최근 24시간' : '최근 7일');
+  var summ = (lo === hi ? (lo + '단계 유지') : (lo + '~' + hi + '단계')) + ' · 단계 변화 ' + changes + '회 · 점검 ' + inw.length + '회';
+  svg.setAttribute('aria-label', label + ' 위험 단계 추이. ' + summ);
+  box.replaceChildren(svg,
+    h('p', { class: 'cap' }, h('b', null, label), ' · ' + summ,
+      gap ? h('small', null, '마지막 점검 이후 점선 구간은 새 데이터가 없는 시간입니다.') : null,
+      infer ? h('small', null, '단계 표기 도입(9월 24일 오후) 이전 기록은 당시 ‘주의해서 볼 변화 있음’을 ‘초기 이상’으로 환산했습니다.') : null));
+}
+
+/* ================= 06 TIMELINE ================= */
+function renderTimeline() {
+  var box = $('timeline'), today = dayKey(now());
+  var y = new Date(today + 'T00:00:00Z'); y.setUTCDate(y.getUTCDate() - 1);
+  var yesterday = y.toISOString().slice(0, 10);
+  var shown = REPORTS.slice(0, tlLimit), curKey = null, list = null, out = [];
+  shown.forEach(function (r, i) {
+    var ts = Date.parse(r.ts), k = dayKey(ts), prev = REPORTS[i + 1];
+    if (k !== curKey) {
+      curKey = k;
+      var name = k === today ? 'TODAY' : (k === yesterday ? 'YESTERDAY' : mdOfKey(k));
+      list = h('ul', { class: 'tl' });
+      out.push(h('div', { class: 'tl-day' }, h('span', { class: 'lab' }, name + '  ·  ' + mdOfKey(k)), list));
+    }
+    var sNow = stageOf(r), sPrev = prev ? stageOf(prev) : sNow;
+    var changed = prev && sNow !== sPrev, dt = deltaTotal(r);
+    var kind = changed ? 'k-stage' : ((dt === null || dt > 0) ? 'k-new' : 'k-none');
+    var title = (r.delta && r.delta.summary) || r.headline;
+    var sum = h('summary', null,
+      h('time', { datetime: r.ts }, r.approx ? '낮' : hm(ts)),
+      h('span', { class: 'tt' }, title,
+        changed ? h('span', { class: 'sb c' + (sNow + 1) }, (sNow > sPrev ? '▲ ' : '▼ ') + (sPrev + 1) + '→' + (sNow + 1) + '단계 ' + (sNow > sPrev ? '상승' : '하락')) : null));
+    var links = arr(r.sources).map(function (s) { var u = safeUrl(s.url); return u ? h('li', null, h('a', { href: u, target: '_blank', rel: 'noopener noreferrer' }, s.title || u)) : null; }).filter(Boolean);
+    var body = h('div', { class: 'body' },
+      rich('p', '', r.headline),
+      arr(r.changes).length ? h('div', null, h('h4', null, '새로 바뀐 것'), h('ul', null, r.changes.map(function (t) { return h('li', { 'data-rich': '' }, t); }))) : null,
+      arr(r.absent).length ? h('div', null, h('h4', null, '나타나지 않은 신호'), rich('p', '', r.absent.join(', '))) : null,
+      r.action ? h('div', null, h('h4', null, '당시 안내'), rich('p', '', r.action)) : null,
+      links.length ? h('div', null, h('h4', null, '출처'), h('ul', null, links)) : null);
+    list.append(h('li', { class: kind, style: null }, h('span', { class: 'dot c' + (sNow + 1), 'aria-hidden': 'true' }), h('details', i === 0 && false ? { open: '' } : null, sum, body)));
+  });
+  box.replaceChildren.apply(box, out);
+  if (REPORTS.length > tlLimit) {
+    box.append(h('button', { type: 'button', class: 'morebtn', onclick: function () { tlLimit += 12; renderTimeline(); decorateAll(); } }, '이전 기록 더 보기 (' + (REPORTS.length - tlLimit) + '건 남음)'));
+  }
+  // 단계가 바뀐 항목의 점 색상 변수 연결
+  box.querySelectorAll('li.k-stage').forEach(function (li) { var d = li.querySelector('.dot'); li.className += ' ' + (d.className.match(/c\d/) || [''])[0]; });
+}
+
+/* ================= 07 DECISION LOGIC ================= */
+function renderLogic() {
+  var stage = stageOf(R0), gs = groups(), a = activeOf(gs, 'A'), b = activeOf(gs, 'B');
+  var rules = [
+    { toks: [['A']], txt: 'A급 신호 1개', out: 'WATCH', kr: '단계를 크게 올리지 않음 · 초기 이상 유지', idx: 1 },
+    { toks: [['A'], ['A']], op: '+', txt: '서로 독립적인 A급 2개', out: 'PREPARE', kr: '선제 준비 검토', idx: 2 },
+    { toks: [['A'], ['A'], ['A']], op: '+', txt: 'A급 3개 이상, 서로 다른 군종·지역', out: 'STRONG SIGNAL', kr: '강한 신호', idx: 2, nohere: true },
+    { toks: [['A'], ['A'], ['B'], ['B']], op: '+', txt: 'A급 2개 이상 + B급 2개 이상', out: 'MOBILITY REVIEW', kr: '이동 선택지 확보 검토', idx: 3 },
+    { toks: [['A', '…'], ['P', 'ATTACK POSTURE'], ['B', '확증']], op: '+', txt: 'A급 다수 + 공격 직전형 배치 + B급 확증', out: 'IMMEDIATE RESPONSE REVIEW', kr: '즉시 대응 검토', idx: 4 }
+  ];
+  var hereDone = false;
+  var rows = rules.map(function (r) {
+    var here = !hereDone && !r.nohere && r.idx === stage; if (here) hereDone = true;
+    var cond = h('div', { class: 'cond' });
+    r.toks.forEach(function (t, i) {
+      if (i > 0) cond.append(h('span', { class: 'op', 'aria-hidden': 'true' }, r.op || '+'));
+      cond.append(h('span', { class: 'tok ' + t[0], 'aria-hidden': 'true' }, t[1] || t[0]));
+    });
+    cond.append(rich('span', 'txt', r.txt));
+    return h('div', { class: 'dl-row c' + (r.idx + 1) + (here ? ' here' : '') },
+      cond, h('span', { class: 'arrow' }, arrowSvg()),
+      h('div', { class: 'outc' }, h('span', { class: 'badge' }, r.out), h('span', { class: 'kr' }, r.kr), here ? h('span', { class: 'here-tag' }, '지금 여기') : null));
+  });
+  var nextNeed = stage >= 4 ? '이미 최고 단계입니다.' : (stage <= 1 ? '다음 단계까지: 독립적인 A급 신호 2개가 필요합니다. 지금은 ' + a + '개입니다.' : (stage === 2 ? '다음 단계까지: A급 2개 이상 + B급 2개 이상이 필요합니다. 지금은 A급 ' + a + '개, B급 ' + b + '개입니다.' : '다음 단계까지: A급 다수 + 공격 직전형 배치 + B급 확증이 필요합니다. 지금은 A급 ' + a + '개, B급 ' + b + '개입니다.'));
+  $('logic').replaceChildren.apply($('logic'), rows.concat([h('div', { class: 'livecheck' }, h('b', null, '현재 판정 근거 · '), '관측 중(ACTIVE)인 A급 ' + a + '개, B급 ' + b + '개. ' + nextNeed)]));
+}
+
+/* ================= 08 SOURCES ================= */
+function renderSources() {
+  var box = $('sources'), gs = groups(), evid = [];
+  gs.forEach(function (G) { G.rows.forEach(function (r) { if (r.meta && (r.meta.event || r.meta.detected || r.meta.src) && G.tier !== 'A') evid.push({ r: r, t: G.tier }); }); });
+  var out = [];
+  if (evid.length) {
+    out.push(h('div', { class: 'sub-h', style: 'margin-top:0' }, 'Evidence by signal · 신호별 근거'));
+    out.push(h('div', { class: 'evid' }, evid.map(function (e) {
+      var m = e.r.meta || {};
+      return h('div', { class: 'card ev' },
+        h('div', { class: 'nm' }, stIcon(e.r.st), rich('span', '', e.r.name)),
+        h('dl', null,
+          h('div', null, h('dt', null, 'EVENT DATE'), h('dd', null, m.event ? mdOfIso(m.event) : '–')),
+          h('div', null, h('dt', null, 'FIRST DETECTED'), h('dd', null, m.detected ? mdOfIso(m.detected) : '–')),
+          h('div', null, h('dt', null, 'SOURCE'), h('dd', null, m.src || '–')),
+          h('div', null, h('dt', null, 'CONFIDENCE'), h('dd', null, confEl(m.conf, true) || '–'))));
+    })));
+    out.push(h('p', { class: 'cap', style: 'margin:10px 0 0' }, '발생일(EVENT DATE)과 최초 확인일(FIRST DETECTED)은 다를 수 있습니다. 검색된 날짜를 발생일로 보지 않습니다.'));
+  }
+  var src = arr(R0.sources);
+  out.push(h('div', { class: 'sub-h' }, 'Source links · 원문 링크'));
+  if (src.length) {
+    out.push(h('ul', { class: 'links-list' }, src.map(function (s) {
+      var u = safeUrl(s.url); if (!u) return null;
+      var host = ''; try { host = new URL(u).hostname.replace(/^www\./, ''); } catch (e) {}
+      var bits = [s.publisher || host];
+      if (s.event_date) bits.push('EVENT ' + mdOfIso(s.event_date));
+      if (s.first_detected) bits.push('DETECTED ' + mdOfIso(s.first_detected));
+      return h('li', { class: 'card' }, h('a', { href: u, target: '_blank', rel: 'noopener noreferrer' }, s.title || u),
+        h('div', { class: 'm' }, bits.join(' · '), s.confidence && CONF[s.confidence] ? [' · ', confEl(s.confidence, true)] : null));
+    })));
+  } else {
+    out.push(h('p', { class: 'empty' }, '이번 점검에는 원문 링크가 기록되지 않았습니다. 자동 점검이 링크를 남기면 여기에 표시됩니다. 이전 점검의 링크는 Timeline에서 각 기록을 펼치면 볼 수 있습니다.'));
+  }
+  box.replaceChildren.apply(box, out);
+}
+
+/* ================= 용어 툴팁 ================= */
+var TERM_RE = /(Command Sponsorship|Concurrent Travel|NEO|ERD|DoDEA|USFK|TEL|ISR|OSINT|NLL|[ABC]급)/g;
+function decorate(root) {
+  var seen = {}, w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), nodes = [], n;
+  while ((n = w.nextNode())) { if (n.parentElement && !n.parentElement.closest('button,summary,a,.term,script,style')) nodes.push(n); }
+  nodes.forEach(function (node) {
+    var text = node.nodeValue, m, last = 0, frag = null, re = new RegExp(TERM_RE.source, 'g');
+    while ((m = re.exec(text))) {
+      var k = m[1], i = m.index, before = text.charAt(i - 1), after = text.charAt(i + k.length);
+      if (/[A-Za-z]/.test(k.charAt(0)) && /[A-Za-z]/.test(before)) continue;
+      if (/[A-Za-z]$/.test(k) && /[A-Za-z]/.test(after)) continue;
+      if (seen[k]) continue;
+      seen[k] = 1;
+      frag = frag || document.createDocumentFragment();
+      frag.append(text.slice(last, i), h('span', { class: 'term' }, k, h('button', { type: 'button', class: 'q', 'data-k': k, 'aria-label': k + ' 용어 설명' }, '?')));
+      last = i + k.length;
+    }
+    if (frag) { frag.append(text.slice(last)); node.parentNode.replaceChild(frag, node); }
+  });
+}
+function decorateAll() { document.querySelectorAll('[data-rich]').forEach(function (el) { if (!el.closest('.term')) decorate(el); }); }
+
+var tip = $('tip'), tipBtn = null;
+function showTip(btn) {
+  var g = GLOSS[btn.getAttribute('data-k')]; if (!g) return;
+  tipBtn = btn; tip.replaceChildren(h('strong', null, g.t), g.d); tip.hidden = false;
+  btn.setAttribute('aria-expanded', 'true'); btn.setAttribute('aria-describedby', 'tip');
+  var r = btn.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  var left = Math.min(Math.max(8, r.left + r.width / 2 - tw / 2), window.innerWidth - tw - 8);
+  var top = r.bottom + 8; if (top + th > window.innerHeight - 8) top = Math.max(8, r.top - th - 8);
+  tip.style.left = left + 'px'; tip.style.top = top + 'px';
+}
+function hideTip() { if (tipBtn) { tipBtn.setAttribute('aria-expanded', 'false'); tipBtn.removeAttribute('aria-describedby'); } tip.hidden = true; tipBtn = null; }
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('.q');
+  if (b) { e.preventDefault(); if (tipBtn === b && !tip.hidden) hideTip(); else { hideTip(); showTip(b); } return; }
+  if (!tip.contains(e.target)) hideTip();
+});
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideTip(); });
+if (window.matchMedia && matchMedia('(hover: hover)').matches) {
+  document.addEventListener('mouseover', function (e) { var b = e.target.closest && e.target.closest('.q'); if (b && b !== tipBtn) { hideTip(); showTip(b); } });
+  document.addEventListener('mouseout', function (e) { var b = e.target.closest && e.target.closest('.q'); if (b && b === tipBtn && b.getAttribute('aria-expanded') === 'true' && document.activeElement !== b) hideTip(); });
+}
+window.addEventListener('scroll', hideTip, { passive: true });
+window.addEventListener('resize', hideTip);
+
+/* ================= 기간 토글 ================= */
+function setRange(r) {
+  trendRange = r;
+  $('r24').setAttribute('aria-pressed', String(r === '24h'));
+  $('r7').setAttribute('aria-pressed', String(r === '7d'));
+  renderTrend();
+}
+$('r24').addEventListener('click', function () { setRange('24h'); });
+$('r7').addEventListener('click', function () { setRange('7d'); });
+
+/* ================= 로드 ================= */
+function renderAll() {
+  renderHero(); renderFresh(); renderLadder(); renderChanged(); renderTodo();
+  renderSignals(); renderTrend(); renderTimeline(); renderLogic(); renderSources();
+  decorateAll();
+}
+function apply(data) {
+  var list = arr(data && data.reports);
+  if (!list.length) throw new Error('empty');
+  $('loaderr').hidden = true;
+  if (list[0].ts === lastTs) return;
+  lastTs = list[0].ts; REPORTS = list; R0 = list[0];
+  renderAll();
+}
+function load() {
+  if (window.__CANARY_DATA__) { try { apply(window.__CANARY_DATA__); } catch (e) { $('loaderr').hidden = false; } return Promise.resolve(); }
+  return fetch(DATA_URL + (DATA_URL.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now(), { cache: 'no-store' })
+    .then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); })
+    .then(apply)
+    .catch(function () { if (!R0) $('loaderr').hidden = false; });
+}
+load();
+if (!window.__CANARY_DATA__) setInterval(load, POLL_MS);
+setInterval(function () { if (R0) { renderFresh(); } }, 60000);
+</script>
+</body>
+</html>
